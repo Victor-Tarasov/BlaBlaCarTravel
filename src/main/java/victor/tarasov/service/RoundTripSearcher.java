@@ -25,7 +25,7 @@ public class RoundTripSearcher {
             for (Trip returnTrip : findAllReturnTrips(forwardTrip)) {
                 roundTrips.add(new RoundTrip(forwardTrip, returnTrip));
             }
-            System.out.printf("\rFind stop overs for %d/%d trips." , i, forwardTrips.size() - 1);
+            System.out.printf("\rFind round trips %d/%d trips." , i, forwardTrips.size() - 1);
         }
         return roundTrips;
     }

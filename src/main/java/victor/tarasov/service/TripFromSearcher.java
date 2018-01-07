@@ -1,14 +1,12 @@
 package victor.tarasov.service;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Streams;
 import victor.tarasov.model.Criteria;
 import victor.tarasov.model.trip.list.TripListRequest;
 import victor.tarasov.model.trip.list.response.Coordinates;
 import victor.tarasov.model.trip.list.response.Trip;
 
 import java.time.LocalDateTime;
-import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -42,6 +40,7 @@ public class TripFromSearcher extends AbstractTripSearcher {
         return trips.stream()
                 .filter(this::isTripsDepartureTimeValid)
                 .filter(this::isTripDistanceValid)
+                .filter(this::isPriceValid)
                 .collect(Collectors.toList());
     }
 
