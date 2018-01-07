@@ -69,8 +69,8 @@ public class RoundTrip {
         return getPriceToDestination() + getReturnTripPrice();
     }
 
-    private Integer extractPrice(Trip tripToDestination) {
-        Price price = tripToDestination.getPrice();
+    private Integer extractPrice(Trip trip) {
+        Price price = trip.getPrice();
         String currency = price.getCurrency();
         if (!currency.equals("PLN")) {
             throw new IllegalArgumentException("Wrong currency: " + currency);

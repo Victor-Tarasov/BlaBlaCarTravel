@@ -12,6 +12,7 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 public class BlaBlaCarApi {
     private static final List<String> SECRET_KEYS = ImmutableList.of(
@@ -32,7 +33,6 @@ public class BlaBlaCarApi {
             "d4509b26ffa040409d9755ee68eba982",
             "da5e3e3d98e04bf88660adf5f5bd02f8"
     );
-    private static int secretKeysIndex = 0;
     private static final String SECRET_KEY_HEADER_NAME = "key";
     private static final String TRIPS_ENDPOINT_URL = "https://public-api.blablacar.com/api/v2/trips";
     private static int requestCount = 0;
@@ -43,7 +43,7 @@ public class BlaBlaCarApi {
             target = target.queryParam(param.getKey(), param.getValue());
         }
 
-        return request(target, TripListResponse.class);
+        return requestWithRetries(target, TripListResponse.class);
     }
 
     public TripDetails getTripDetails(TripDetailsRequest request) {
@@ -51,36 +51,37 @@ public class BlaBlaCarApi {
                 .target(TRIPS_ENDPOINT_URL)
                 .path(request.getTripId().toString())
                 .queryParam("locale", request.getLocale());
-        return request(target, TripDetails.class);
+        return requestWithRetries(target, TripDetails.class);
     }
 
     @SneakyThrows
-    private <T> T request(WebTarget target, Class<T> responseType) {
+    private <T> T requestWithRetries(WebTarget target, Class<T> responseType) {
         try {
-            T response = target.request()
-                    .header(SECRET_KEY_HEADER_NAME, SECRET_KEYS.get(secretKeysIndex))
-                    .get(responseType);
-            requestCount++;
-            if (requestCount % 100 == 0) {
-                System.out.print("Request count: " + requestCount);
-            }
-            return response;
+            return request(target, responseType);
         } catch (ClientErrorException e) {
             String errorResponse = e.getResponse().readEntity(String.class);
             System.err.println(errorResponse);
             e.printStackTrace();
-            return retry(target, responseType);
+            return requestWithRetries(target, responseType);
         } catch (Exception e) {
             e.printStackTrace();
-            return retry(target, responseType);
+            return requestWithRetries(target, responseType);
         }
     }
 
-    private <T> T retry(WebTarget target, Class<T> responseType) throws InterruptedException {
-        if (++secretKeysIndex == SECRET_KEYS.size()) {
-            secretKeysIndex = 0;
+    private <T> T request(WebTarget target, Class<T> responseType) {
+        T response = target.request()
+                .header(SECRET_KEY_HEADER_NAME, getSecretKey())
+                .get(responseType);
+        requestCount++;
+        if (requestCount % 100 == 0) {
+            System.out.print("Request count: " + requestCount);
         }
-        System.out.println("New secret key index: " + secretKeysIndex);
-        return request(target, responseType);
+
+        return response;
+    }
+
+    private String getSecretKey() {
+        return SECRET_KEYS.get(new Random().nextInt(SECRET_KEYS.size()));
     }
 }

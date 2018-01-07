@@ -4,7 +4,6 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import victor.tarasov.model.trip.Locale;
 import victor.tarasov.model.trip.list.response.Coordinates;
-import victor.tarasov.service.DateConverter;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -23,16 +22,21 @@ public class TripListRequest {
     private LocalDate latestDepartureDate;
     private Integer earliestDepartureHour;
     private Integer latestDepartureHour;
-    private Integer seats = 2;
+    private Integer seats;
     private String sort = "trip_price";
     private Integer limit = 500;
     private Integer radiusFrom = ESTIMATE_CITY_RADIUS;
     private Integer radiusTo;
     private Integer page;
-    private String fields = "links,departure_date,departure_place,arrival_place,price_with_commission,duration,distance,permanent_id";
+    private String fields = "links,departure_date," +
+            "departure_place," +
+            "arrival_place," +
+            "price_with_commission," +
+            "duration,distance," +
+            "permanent_id," +
+            "seats_left";
 
     public Map<String, String> toParamsMap() {
-        DateConverter converter = new DateConverter();
         ParametersMap params = new ParametersMap();
         params.putNonNull("locale", locale);
         params.putNonNull("fc", departureCoordinates);

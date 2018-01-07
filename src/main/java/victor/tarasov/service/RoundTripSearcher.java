@@ -1,14 +1,16 @@
 package victor.tarasov.service;
 
-import com.google.common.collect.Lists;
 import victor.tarasov.model.Criteria;
 import victor.tarasov.model.trip.RoundTrip;
 import victor.tarasov.model.trip.list.response.Coordinates;
 import victor.tarasov.model.trip.list.response.Trip;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class RoundTripSearcher {
+    private BalkOperationExecutor balkOperationExecutor = new BalkOperationExecutor();
     private Criteria criteria;
     private Coordinates from;
 
@@ -18,16 +20,18 @@ public class RoundTripSearcher {
     }
 
     public List<RoundTrip> findAllTrips() {
-        List<RoundTrip> roundTrips = Lists.newArrayList();
-        List<Trip> forwardTrips = new TripFromSearcher(from, criteria).findAllTrips();
-        for (int i = 0; i < forwardTrips.size(); i++) {
-            Trip forwardTrip = forwardTrips.get(i);
-            for (Trip returnTrip : findAllReturnTrips(forwardTrip)) {
-                roundTrips.add(new RoundTrip(forwardTrip, returnTrip));
-            }
-            System.out.printf("\rFind round trips %d/%d trips." , i, forwardTrips.size() - 1);
-        }
-        return roundTrips;
+        List<Trip> forwardTrips = new ForwardTripSearcher(from, criteria).findAllTrips();
+        System.out.println("Find round trips");
+        return balkOperationExecutor.runBalkOperation(forwardTrips, this::findRoundTrips)
+                .stream()
+                .flatMap(Collection::stream)
+                .collect(Collectors.toList());
+    }
+
+    private List<RoundTrip> findRoundTrips(Trip forwardTrip) {
+        return findAllReturnTrips(forwardTrip).stream()
+                .map(returnTrip -> new RoundTrip(forwardTrip, returnTrip))
+                .collect(Collectors.toList());
     }
 
     private List<Trip> findAllReturnTrips(Trip trip) {

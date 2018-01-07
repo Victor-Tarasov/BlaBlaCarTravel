@@ -26,6 +26,9 @@ public class Trip {
     @JsonProperty("price_with_commission")
     private Price price;
 
+    @JsonProperty("seats_left")
+    private Integer seats;
+
     private Integer durationSeconds;
 
     private Integer distanceKilometers;

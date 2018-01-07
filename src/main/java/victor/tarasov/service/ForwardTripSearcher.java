@@ -1,21 +1,23 @@
 package victor.tarasov.service;
 
-import com.google.common.collect.Lists;
 import victor.tarasov.model.Criteria;
 import victor.tarasov.model.trip.list.TripListRequest;
 import victor.tarasov.model.trip.list.response.Coordinates;
 import victor.tarasov.model.trip.list.response.Trip;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static victor.tarasov.model.trip.list.TripListRequest.ESTIMATE_CITY_RADIUS;
+import static victor.tarasov.Main.SEATS_NEEDED;
 
-public class TripFromSearcher extends AbstractTripSearcher {
+public class ForwardTripSearcher extends AbstractTripSearcher {
+    private BalkOperationExecutor balkOperationExecutor = new BalkOperationExecutor();
     private Coordinates from;
 
-    public TripFromSearcher(Coordinates from, Criteria criteria) {
+    public ForwardTripSearcher(Coordinates from, Criteria criteria) {
         super(criteria);
         this.from = from;
     }
@@ -30,13 +32,14 @@ public class TripFromSearcher extends AbstractTripSearcher {
                 .filter(this::isTripsArrivalTimeValid)
                 .filter(this::isPriceValid)
                 .filter(this::isTripDistanceValid)
+                .filter(this::isSeatsValid)
                 .collect(Collectors.toList());
         System.out.println("Total number of trips after filtration: " + filteredTrips.size());
         return filteredTrips;
     }
 
     private List<Trip> listAllTrips() {
-        List<Trip> trips = extractTripsFromAllPages(makeTripListRequest());
+        List<Trip> trips = extractTripsFromAllPages(makeTripListRequest().setSeats(null));
         return trips.stream()
                 .filter(this::isTripsDepartureTimeValid)
                 .filter(this::isTripDistanceValid)
@@ -48,15 +51,21 @@ public class TripFromSearcher extends AbstractTripSearcher {
         List<Trip> longDistanceTrips = trips.parallelStream()
                 .filter(trip -> trip.getDistanceKilometers() > 80)
                 .collect(Collectors.toList());
-        List<Trip> stopOverTrips = Lists.newArrayList();
-        System.out.println();
-        for (int i = 0; i < longDistanceTrips.size(); i++) {
-            Trip trip = longDistanceTrips.get(i);
-            stopOverTrips.addAll(new StopOverSearcher(trip).findAllTrips());
-            System.out.printf("\rFind stop overs for %d/%d trips." , i, longDistanceTrips.size() - 1);
-        }
+        System.out.println("Find stop overs for trips.");
+        List<Trip> stopOverTrips = balkOperationExecutor.runBalkOperation(longDistanceTrips, this::findStopOvers)
+                .stream()
+                .flatMap(Collection::stream)
+                .collect(Collectors.toList());
         System.out.println("Stop over trips: " + trips.size());
         return stopOverTrips;
+    }
+
+    private List<Trip> findStopOvers(Trip trip) {
+        return new StopOverSearcher(trip).findAllTrips();
+    }
+
+    private boolean isSeatsValid(Trip trip) {
+        return trip.getSeats() > SEATS_NEEDED;
     }
 
     private boolean isTripDistanceValid(Trip trip) {

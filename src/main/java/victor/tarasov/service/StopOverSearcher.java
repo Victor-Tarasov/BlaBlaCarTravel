@@ -1,14 +1,12 @@
 package victor.tarasov.service;
 
+import com.google.common.collect.ImmutableList;
 import victor.tarasov.model.trip.details.TripDetailsRequest;
 import victor.tarasov.model.trip.details.response.Stop;
 import victor.tarasov.model.trip.list.TripListRequest;
 import victor.tarasov.model.trip.list.response.Trip;
-import victor.tarasov.model.trip.list.response.TripId;
 
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static victor.tarasov.model.trip.Locale.CROATIA;
@@ -52,6 +50,13 @@ public class StopOverSearcher {
             if (stopOver.isDeparturePlace()) departurePlace = stopOver;
         }
         Stop arrivalPlace = stopOvers.stream().filter(Stop::isArrivalPlace).findFirst().get();
-        return stopOvers.subList(stopOvers.indexOf(departurePlace) + 1, stopOvers.indexOf(arrivalPlace));
+        int fromIndex = stopOvers.indexOf(departurePlace) + 1;
+        int toIndex = stopOvers.indexOf(arrivalPlace);
+        if (fromIndex > toIndex) {
+            System.err.println("Something wrong with stop overs: " + stopOvers);
+            return ImmutableList.of();
+        }
+
+        return stopOvers.subList(fromIndex, toIndex);
     }
 }
