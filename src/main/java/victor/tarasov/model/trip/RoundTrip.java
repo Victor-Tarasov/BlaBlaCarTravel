@@ -53,6 +53,7 @@ public class RoundTrip {
                 getLinkForReturnTravel()
         ).stream()
                 .map(String::valueOf)
+                .map(value -> value.replaceAll(",", ""))
                 .collect(Collectors.joining(CSV_DECIMETER));
     }
 

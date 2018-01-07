@@ -14,20 +14,16 @@ public class TripId {
 
     /**
      * In Czech.
+     * Name of departure and destination.
      */
-    private String cityFrom;
-
-    /**
-     * In Czech.
-     */
-    private String cityTo;
+    private String textPart;
 
     @Override
     public String toString() {
-        return id + "-" + cityFrom + "-" + cityTo;
+        return id + "-" + textPart;
     }
 
     public TripId copy() {
-        return new TripId(id, cityFrom, cityTo);
+        return new TripId(id, textPart);
     }
 }

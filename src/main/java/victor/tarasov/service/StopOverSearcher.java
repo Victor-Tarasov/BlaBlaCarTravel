@@ -36,12 +36,6 @@ public class StopOverSearcher {
                 .get();
     }
 
-    public static void main(String[] args) {
-        Matcher matcher = Pattern.compile("(\\d+)-([a-z]+)-(.*)").matcher("sdfasfasf");
-        matcher.matches();
-        new TripId(Integer.valueOf(matcher.group(1)), matcher.group(2), matcher.group(3));
-    }
-
     private TripListRequest makeRequest(Stop stopOver) {
         return new TripListRequest().setRadiusFrom(1)
                 .setRadiusTo(1)

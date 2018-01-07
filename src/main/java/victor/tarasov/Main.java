@@ -12,8 +12,9 @@ public class Main {
     public static final Coordinates KRAKOW_COORDINATES = new Coordinates(50.061787f,19.937545f);
 
     public static void main(String[] args) {
-        LocalDateTime departureTime = LocalDateTime.of(2018, 1, 8, 5, 0);
-        Criteria criteria = new Criteria(departureTime, departureTime.plusDays(5), 24, 500);
+        LocalDateTime departureTime = LocalDateTime.of(2018, 1, 12, 7, 0);
+        LocalDateTime arrivalTime = LocalDateTime.of(2018, 1, 14, 23, 0);
+        Criteria criteria = new Criteria(departureTime, arrivalTime, 24, 200);
 
         List<RoundTrip> roundTrips = new RoundTripSearcher(KRAKOW_COORDINATES, criteria).findAllTrips();
         new CsvFileView().output(roundTrips);

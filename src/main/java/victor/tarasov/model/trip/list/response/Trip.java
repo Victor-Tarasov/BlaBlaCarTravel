@@ -54,12 +54,12 @@ public class Trip {
         this.distanceKilometers = extractValue(distanceKilometers, "km");
     }
 
-    @SneakyThrows
     @JsonProperty("permanent_id")
     private void setTripId(String permanentId) {
-        Matcher matcher = Pattern.compile("(\\d+)-([a-z]+)-(.*)").matcher(permanentId);
-        matcher.matches();
-        this.tripId = new TripId(Integer.valueOf(matcher.group(1)), matcher.group(2), matcher.group(3));
+        int decimeterIndex = permanentId.indexOf("-");
+        String id = permanentId.substring(0, decimeterIndex);
+        String textPart = permanentId.substring(decimeterIndex + 1, permanentId.length());
+        this.tripId = new TripId(Integer.valueOf(id), textPart);
     }
 
     private Integer extractValue(Value value, String unit) {
